@@ -1,10 +1,16 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cmath>
 #include <chrono>
 #include <random>
-#include <thread>
+
+#include <algorithm>
+#include <limits>
+#include <cstdlib>
+#include <ctime>
+#include <locale.h>
+
+#include <fstream>
 
 using namespace std;
 using namespace chrono;
@@ -12,9 +18,20 @@ using namespace chrono;
 // Класс данных для таблицы
 class TData {
 public:
-    virtual ~TData() {}
-    virtual TData* GetCopy() const = 0; // Получить копию объекта
-    virtual string GetKey() const = 0; // Получить ключ данных
+    int count; // Количество вхождений
+    string data; // Данные
+
+    TData(const string& data = "", int count = 1) : data(data), count(count) {}
+
+    // Получить копию объекта
+    virtual TData* GetCopy() const {
+        return new TData(data, count);
+    }
+
+    // Получить ключ данных
+    virtual string GetKey() const {
+        return data;
+    }
 };
 
 // Класс записи неупорядоченной таблицы
@@ -32,7 +49,23 @@ public:
     void SetNext(TTabRecord* pN) { pNext = pN; }
 };
 
-// Класс неупорядоченной таблицы
+// Узел бинарного дерева поиска
+class BSTNode {
+public:
+    string Key; // Ключ
+    TData* pData; // Данные
+    BSTNode* Left; // Левый потомок
+    BSTNode* Right; // Правый потомок
+
+    BSTNode(const string& key = "", TData* pVal = nullptr, BSTNode* left = nullptr, BSTNode* right = nullptr) :
+        Key(key), Left(left), Right(right) {
+        pData = new TData();
+        pData->count = 1;
+        pData->data = key;
+    }
+};
+
+// Класс неупорядоченной таблицы (массив)
 class TNeUpTable {
 protected:
     TTabRecord* pFirst;
@@ -81,7 +114,67 @@ void TNeUpTable::DelRecord(const string& k) {
     }
 }
 
-// Класс упорядоченной таблицы
+// Класс неупорядоченной таблицы (список)
+class UnorderedListTable : public TNeUpTable {
+public:
+    UnorderedListTable() : TNeUpTable() {}
+    ~UnorderedListTable() { Clear(); }
+
+    void Insert(const string& k, TData* pData);
+    int FindRecord(const string& k);
+    void Delete(const string& k);
+    void Clear();
+};
+
+void UnorderedListTable::Insert(const string& k, TData* pData) {
+    TTabRecord* pRec = new TTabRecord(k, pData);
+    pRec->SetNext(pFirst);
+    pFirst = pRec;
+}
+
+int UnorderedListTable::FindRecord(const string& k) {
+    TTabRecord* pRec = pFirst;
+    int count = 0;
+    while (pRec) {
+        if (pRec->GetKey() == k)
+            count++;
+        pRec = pRec->GetNext();
+    }
+    return count;
+}
+
+void UnorderedListTable::Delete(const string& k) {
+    if (!pFirst)
+        return;
+    if (pFirst->GetKey() == k) {
+        TTabRecord* pTemp = pFirst;
+        pFirst = pFirst->GetNext();
+        delete pTemp;
+        return;
+    }
+    TTabRecord* pPrev = pFirst;
+    TTabRecord* pCurr = pFirst->GetNext();
+    while (pCurr && pCurr->GetKey() != k) {
+        pPrev = pCurr;
+        pCurr = pCurr->GetNext();
+    }
+    if (pCurr) {
+        pPrev->SetNext(pCurr->GetNext());
+        delete pCurr;
+    }
+}
+
+void UnorderedListTable::Clear() {
+    TTabRecord* pCurr = pFirst;
+    while (pCurr) {
+        TTabRecord* pTemp = pCurr;
+        pCurr = pCurr->GetNext();
+        delete pTemp;
+    }
+    pFirst = nullptr;
+}
+
+// Класс упорядоченной таблицы (массив, сортировка слиянием, бинарный поиск)
 class TUpTable : public TNeUpTable {
 protected:
     void SortData();
@@ -171,23 +264,32 @@ void TUpTable::Merge(TTabRecord** arr, int l, int m, int r) {
 }
 
 int TUpTable::FindRecord(const string& k) {
-    int count = 0;
+    if (!pFirst)
+        return 0;
 
-    TTabRecord* pRec = pFirst;
-    while (pRec) {
-        if (pRec->GetKey() == k) {
-            count++;
-            TTabRecord* nextRec = pRec->GetNext();
-            while (nextRec && nextRec->GetKey() == k) {
+    int left = 0, right = DataCount - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        TTabRecord* midRec = pFirst;
+        for (int i = 0; i < mid; ++i)
+            midRec = midRec->GetNext();
+
+        if (midRec->GetKey() == k) {
+            int count = 1;
+            TTabRecord* prevRec = midRec;
+            while (midRec->GetNext() && midRec->GetNext()->GetKey() == k) {
                 count++;
-                nextRec = nextRec->GetNext();
+                midRec = midRec->GetNext();
             }
             return count;
         }
-        pRec = pRec->GetNext();
+        else if (midRec->GetKey() < k)
+            left = mid + 1;
+        else
+            right = mid - 1;
     }
 
-    return count;
+    return 0;
 }
 
 void TUpTable::InsRecord(const string& k, TData* pVal) {
@@ -233,6 +335,121 @@ void TUpTable::DelRecord(const string& k) {
         delete pCurr;
         DataCount--;
     }
+}
+
+// Класс упорядоченной таблицы (бинарное дерево поиска)
+class OrderedBSTTable {
+private:
+    BSTNode* Root;
+public:
+    OrderedBSTTable() : Root(nullptr) {}
+    ~OrderedBSTTable() { Clear(); }
+
+    void Insert(const string& k, TData* pData);
+    int FindRecord(const string& k);
+    void Delete(const string& k);
+    void Clear();
+
+private:
+    void InsertHelper(BSTNode*& node, const string& k, TData* pData);
+    int FindRecordHelper(BSTNode* node, const string& k);
+    void DeleteHelper(BSTNode*& node, const string& k);
+    void ClearHelper(BSTNode*& node);
+};
+
+void OrderedBSTTable::Insert(const string& k, TData* pData) {
+    InsertHelper(Root, k, pData);
+}
+
+void OrderedBSTTable::InsertHelper(BSTNode*& node, const string& k, TData* pData) {
+    if (!node) {
+        node = new BSTNode(k, pData);
+    }
+    else if (k < node->Key) {
+        InsertHelper(node->Left, k, pData);
+    }
+    else if (k > node->Key) {
+        InsertHelper(node->Right, k, pData);
+    }
+    else {
+        if (!node->pData) {
+            node->pData = pData;
+        }
+        else {
+            node->pData->count++;
+        }
+    }
+}
+
+int OrderedBSTTable::FindRecord(const string& k) {
+    return FindRecordHelper(Root, k);
+}
+
+int OrderedBSTTable::FindRecordHelper(BSTNode* node, const string& k) {
+    if (!node)
+        return 0;
+
+    if (node->Key == k)
+        return node->pData ? node->pData->count : 0;
+
+    if (k < node->Key)
+        return FindRecordHelper(node->Left, k);
+    else
+        return FindRecordHelper(node->Right, k);
+}
+
+
+void OrderedBSTTable::Delete(const string& k) {
+    DeleteHelper(Root, k);
+}
+
+void OrderedBSTTable::DeleteHelper(BSTNode*& node, const string& k) {
+    if (!node)
+        return;
+    if (k < node->Key) {
+        DeleteHelper(node->Left, k);
+    }
+    else if (k > node->Key) {
+        DeleteHelper(node->Right, k);
+    }
+    else {
+
+        if (node->pData && node->pData->count > 1) {
+            node->pData->count--;
+            return;
+        }
+        if (!node->Left) {
+            BSTNode* temp = node->Right;
+            delete node;
+            node = temp;
+        }
+        else if (!node->Right) {
+            BSTNode* temp = node->Left;
+            delete node;
+            node = temp;
+        }
+        else {
+            BSTNode* temp = node->Right;
+            while (temp->Left)
+                temp = temp->Left;
+            node->Key = temp->Key;
+            node->pData = temp->pData;
+            DeleteHelper(node->Right, temp->Key);
+        }
+    }
+}
+
+void OrderedBSTTable::Clear() {
+    ClearHelper(Root);
+    Root = nullptr;
+}
+
+void OrderedBSTTable::ClearHelper(BSTNode*& node) {
+    if (!node)
+        return;
+    ClearHelper(node->Left);
+    ClearHelper(node->Right);
+    delete node;
 }
 
 // Класс хеш-таблицы
@@ -295,143 +512,271 @@ void THashTable::DelRecord(const std::string& k) {
 }
 
 // Вектор
-vector<string> GenerateRandomWords(const vector<string>& words, int count) {
+vector<string> GenerateRandomWords(int count) {
     vector<string> randomWords;
+    randomWords.reserve(count);
+
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<int> dis(0, words.size() - 1);
+    uniform_int_distribution<> dis('A', 'Z');
 
     for (int i = 0; i < count; ++i) {
-        randomWords.push_back(words[dis(gen)]);
+        string word;
+        for (int j = 0; j < 6; ++j) { // Слова длиной 6 символов
+            word.push_back(dis(gen));
+        }
+        randomWords.push_back(word);
     }
+
+    // Добавляем случайным образом повторяющиеся слова
+    uniform_int_distribution<> repeatCount(1, 50); // Случайное количество повторений от n до n
+
+    for (int i = 0; i < count; ++i) {
+        int repeats = repeatCount(gen);
+        for (int j = 0; j < repeats; ++j) {
+            randomWords.push_back(randomWords[i]);
+        }
+    }
+
+    shuffle(randomWords.begin(), randomWords.end(), gen);
 
     return randomWords;
 }
 
-// Функция пользователя системы и тесты производительности таблиц
+void DisplayRandomWords(const vector<string>& randomWords) {
+    cout << "Список случайных слов для поиска:\n";
+    for (int i = 0; i < 10; ++i) {
+        cout << i + 1 << ". " << randomWords[i] << endl;
+    }
+}
 
+// Функция для записи ключа в файл
+void WriteToFile(const string& key) {
+    ofstream file("C:\\Users\\Ваня\\Desktop\\key.txt", ios::app);
+    if (file.is_open()) {
+        file << key << endl;
+        file.close();
+    }
+    else {
+        cerr << "Не получилось открыть файл" << endl;
+    }
+}
+
+// Функция для чтения ключей из файла и вывода на экран
+void ReadFromFile() {
+    ifstream file("C:\\Users\\Ваня\\Desktop\\key.txt");
+    if (file.is_open()) {
+        cout << "\nСодержимое файла key.txt:" << endl;
+        string key;
+        while (getline(file, key)) {
+            cout << key << endl;
+        }
+        file.close();
+    }
+    else {
+        cerr << "Не получилось открыть файл" << endl;
+    }
+}
+
+// Функция для удаления ключа из файла
+void RemoveFromFile(const string& key) {
+    ifstream inputFile("C:\\Users\\Ваня\\Desktop\\key.txt");
+    ofstream tempFile("C:\\Users\\Ваня\\Desktop\\temp.txt");
+
+    string line;
+    bool found = false;
+    while (getline(inputFile, line)) {
+        if (line == key && !found) {
+            found = true;
+        }
+        else {
+            tempFile << line << endl;
+        }
+    }
+
+    inputFile.close();
+    tempFile.close();
+
+    // Удаляем старый файл
+    remove("C:\\Users\\Ваня\\Desktop\\key.txt");
+    // Переименовываем временный файл в нужное имя
+    rename("C:\\Users\\Ваня\\Desktop\\temp.txt", "C:\\Users\\Ваня\\Desktop\\key.txt");
+
+    if (!found) {
+        cerr << "Слово не найдено в файле" << endl;
+    }
+}
+
+// Функция пользователя системы и тесты производительности таблиц
 int main() {
     setlocale(LC_ALL, "Russian");
 
     TNeUpTable neUpTable;
-    TUpTable upTable(25); // Размер упорядоченной таблицы
-    THashTable hashTable(25);   // Размер хеш-таблицы
+    UnorderedListTable listTable;
+    TUpTable upTable(25); // можно изменить
+    OrderedBSTTable bstTable;
+    THashTable hashTable(25); // можно изменить
 
     string key;
     int choice;
-
-    int neUpInserts = 0, upInserts = 0, hashInserts = 0;
 
     do {
         cout << "\nМеню:" << endl;
         cout << "1. Вставить слово" << endl;
         cout << "2. Найти слово" << endl;
         cout << "3. Удалить слово" << endl;
-        cout << "4. Провести тест" << endl;
+        cout << "4. Показать данные" << endl;
+        cout << "5. Провести тест" << endl;
         cout << "0. Выход" << endl;
         cout << "Выберите действие: ";
         cin >> choice;
 
         switch (choice) {
         case 1: {
-            // Вставка слова
             cout << "Введите слово: ";
             cin >> key;
             neUpTable.InsRecord(key, nullptr);
             upTable.InsRecord(key, nullptr);
             hashTable.InsRecord(key, nullptr);
+            bstTable.Insert(key, nullptr);
+            listTable.Insert(key, nullptr);
+            WriteToFile(key); // добавление ключа в файл
             break;
         }
 
         case 2: {
-            // Найти слово
             cout << "Введите слово для поиска: ";
             cin >> key;
 
-            // Поиск в неупорядоченной таблице
             int neUpCount = neUpTable.FindRecord(key);
-            cout << "Неупорядоченная таблица: Найдено " << neUpCount << " вхождений" << endl;
+            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений" << endl;
 
-            // Поиск в упорядоченной таблице
+            int listCount = listTable.FindRecord(key);
+            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений" << endl;
+
             int upCount = upTable.FindRecord(key);
-            cout << "Упорядоченная таблица: Найдено " << upCount << " вхождений" << endl;
+            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений" << endl;
 
-            // Поиск в хеш-таблице
+            int bstCount = bstTable.FindRecord(key);
+            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений" << endl;
+
             int hashCount = hashTable.FindRecord(key);
             cout << "Хеш-таблица: Найдено " << hashCount << " вхождений" << endl;
             break;
         }
 
         case 3: {
-            // Удалить слово
             cout << "Введите слово для удаления: ";
             cin >> key;
             neUpTable.DelRecord(key);
             upTable.DelRecord(key);
             hashTable.DelRecord(key);
+            bstTable.Delete(key);
+            listTable.Delete(key);
+            RemoveFromFile(key); // удаление ключа из файла
             break;
         }
 
         case 4: {
+            ReadFromFile();
+            break;
+        }
 
-            int tableSize;
-            cout << "Введите размер таблиц: ";
-            cin >> tableSize;
+        case 5: {
+            bool returnToMainMenu = false;
+            do {
+                int tableSize;
+                cout << "Введите размер таблиц: ";
+                cin >> tableSize;
 
-            // Очистка таблиц перед тестом
-            neUpTable = TNeUpTable();
-            upTable = TUpTable(tableSize);
-            hashTable = THashTable(tableSize);
-            cout << "\nПрограмма создает и заполняет неупорядоченные, \n";
-            cout << "упорядоченные и хеш-таблицы большим количеством слов.\n";
-            cout << "В качестве слов используются названия стран мира, такие как: \n";
-            cout << "France, Spain, Mexico, USA, Turkey, Italy, Greece, UAE, Germany, Austria\n";
-            cout << "Ожидание...\n";
+                neUpTable = TNeUpTable();
+                upTable = TUpTable(tableSize);
+                hashTable = THashTable(tableSize);
+                bstTable = OrderedBSTTable();
+                listTable = UnorderedListTable();
 
-            vector<string> words = { "France", "Spain", "Mexico", "USA", "Turkey", "Italy", "Greece", "UAE", "Germany", "Austria" };
+                cout << "\nПрограмма создает и заполняет таблицы большим количеством случайных слов.\n";
+                cout << "Ожидание...\n";
 
-            vector<string> randomWords = GenerateRandomWords(words, tableSize);
+                vector<string> randomWords = GenerateRandomWords(tableSize);
 
-            auto startTables = high_resolution_clock::now();
+                auto startTables = high_resolution_clock::now();
 
-            for (int i = 0; i < tableSize; ++i) {
-                string randomWord = randomWords[i];
-                neUpTable.InsRecord(randomWord, nullptr);
-                upTable.InsRecord(randomWord, nullptr);
-                hashTable.InsRecord(randomWord, nullptr);
-            }
+                for (int i = 0; i < tableSize; ++i) {
+                    string randomWord = randomWords[i];
+                    neUpTable.InsRecord(randomWord, nullptr);
+                    upTable.InsRecord(randomWord, nullptr);
+                    hashTable.InsRecord(randomWord, nullptr);
+                    bstTable.Insert(randomWord, nullptr);
+                    listTable.InsRecord(randomWord, nullptr);
+                }
 
-            auto endTables = high_resolution_clock::now();
-            duration<double> tablesTime = endTables - startTables;
+                auto endTables = high_resolution_clock::now();
+                duration<double> tablesTime = endTables - startTables;
 
-            string testWord;
-            cout << "\nВведите слово для поиска: ";
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            getline(cin, testWord);
-            // cout << "Нужное нам слово: " << testWord << endl;
+                cout << "\nВремя создания и заполнения таблиц: " << tablesTime.count() << " секунд\n" << endl;
 
-            auto startSearch1 = high_resolution_clock::now();
-            int neUpCount = neUpTable.FindRecord(testWord);
-            auto endSearch1 = high_resolution_clock::now();
-            duration<double> neUpTime = endSearch1 - startSearch1;
-            cout << "Неупорядоченная таблица: Найдено " << neUpCount << " вхождений за " << neUpTime.count() << " секунд" << endl;
+                DisplayRandomWords(randomWords);
 
-            auto startSearch2 = high_resolution_clock::now();
-            int upCount = upTable.FindRecord(testWord);
-            auto endSearch2 = high_resolution_clock::now();
-            duration<double> upTime = endSearch2 - startSearch2;
-            cout << "Упорядоченная таблица: Найдено " << upCount << " вхождений за " << upTime.count() << " секунд" << endl;
+                do {
+                    int subChoice;
+                    cout << "\n1. Найти слово" << endl;
+                    cout << "2. Вернуться в основное меню" << endl;
+                    cout << "Выберите действие: ";
+                    cin >> subChoice;
 
-            auto startSearch3 = high_resolution_clock::now();
-            int hashCount = hashTable.FindRecord(testWord);
-            auto endSearch3 = high_resolution_clock::now();
-            duration<double> hashTime = endSearch3 - startSearch3;
-            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений за " << hashTime.count() << " секунд" << endl;
+                    if (subChoice == 2) {
+                        returnToMainMenu = true;
+                        break;
+                    }
+
+                    string testWord;
+                    cout << "\nВведите слово для поиска: ";
+                    cin >> testWord;
+
+                    auto startSearch1 = high_resolution_clock::now();
+                    int neUpCount = neUpTable.FindRecord(testWord);
+                    auto endSearch1 = high_resolution_clock::now();
+                    duration<double> neUpTime = endSearch1 - startSearch1;
+                    cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений за " << neUpTime.count() << " секунд" << endl;
+
+                    auto startSearch5 = high_resolution_clock::now();
+                    int listCount = listTable.FindRecord(testWord);
+                    auto endSearch5 = high_resolution_clock::now();
+                    duration<double> listTime = endSearch5 - startSearch5;
+                    cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений за " << listTime.count() << " секунд" << endl;
+
+                    auto startSearch2 = high_resolution_clock::now();
+                    int upCount = upTable.FindRecord(testWord);
+                    auto endSearch2 = high_resolution_clock::now();
+                    duration<double> upTime = endSearch2 - startSearch2;
+                    cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений за " << upTime.count() << " секунд" << endl;
+
+                    auto startSearch4 = high_resolution_clock::now();
+                    int bstCount = bstTable.FindRecord(testWord);
+                    auto endSearch4 = high_resolution_clock::now();
+                    duration<double> bstTime = endSearch4 - startSearch4;
+                    cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений за " << bstTime.count() << " секунд" << endl;
+
+                    auto startSearch3 = high_resolution_clock::now();
+                    int hashCount = hashTable.FindRecord(testWord);
+                    auto endSearch3 = high_resolution_clock::now();
+                    duration<double> hashTime = endSearch3 - startSearch3;
+                    cout << "Хеш-таблица: Найдено " << hashCount << " вхождений за " << hashTime.count() << " секунд" << endl;
+
+                } while (true);
+
+                if (returnToMainMenu) {
+                    break;
+                }
+
+            } while (true);
 
             break;
         }
 
         }
+
     } while (choice != 0);
 
     return 0;
