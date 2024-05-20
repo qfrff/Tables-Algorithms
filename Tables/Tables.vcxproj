@@ -127,7 +127,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Tables.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TBinarySearchTree.h" />
+    <ClInclude Include="TData.h" />
+    <ClInclude Include="THashTable.h" />
+    <ClInclude Include="TNeUpTable.h" />
+    <ClInclude Include="TNeUpTableList.h" />
+    <ClInclude Include="TTabRecord.h" />
+    <ClInclude Include="TUpTable.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\..\Desktop\key.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
