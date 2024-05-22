@@ -6,18 +6,22 @@
 class TNeUpTable {
 protected:
     TTabRecord* pFirst;
+    int comparisonCount;
 public:
-    TNeUpTable() : pFirst(nullptr) {}
-
+    TNeUpTable() : pFirst(nullptr), comparisonCount(0) {}
     virtual int FindRecord(const std::string& k);
     virtual void InsRecord(const std::string& k, TData* pVal);
     virtual void DelRecord(const std::string& k);
+    int GetComparisonCount() const { return comparisonCount; }
+    void ResetComparisonCount() { comparisonCount = 0; }
 };
 
 int TNeUpTable::FindRecord(const std::string& k) {
+    comparisonCount = 0;
     TTabRecord* pRec = pFirst;
     int count = 0;
     while (pRec) {
+        comparisonCount++;
         if (pRec->GetKey() == k)
             count++;
         pRec = pRec->GetNext();

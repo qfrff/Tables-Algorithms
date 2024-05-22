@@ -18,11 +18,13 @@ public:
 };
 
 int THashTable::FindRecord(const std::string& k) {
+    comparisonCount = 0;
     int hash = std::hash<std::string>{}(k) % pList.size();
     CurrList = hash;
     TTabRecord* pRec = pList[CurrList];
     int count = 0;
     while (pRec) {
+        comparisonCount++;
         if (pRec->GetKey() == k)
             count++;
         pRec = pRec->GetNext();

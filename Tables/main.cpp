@@ -159,20 +159,35 @@ int main() {
             cout << "Введите слово для поиска: ";
             cin >> key;
 
+            // Поиск в неупорядоченной таблице на основе массива
+            neUpTable.ResetComparisonCount();
             int neUpCount = neUpTable.FindRecord(key);
-            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений" << endl;
+            int neUpComparisons = neUpTable.GetComparisonCount();
+            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений, " << neUpComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
 
+            // Поиск в неупорядоченной таблице на основе списка
+            listTable.ResetComparisonCount();
             int listCount = listTable.FindRecord(key);
-            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений" << endl;
+            int listComparisons = listTable.GetComparisonCount();
+            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений, " << listComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
 
+            // Поиск в упорядоченной таблице (сортировка слиянием, бинарный поиск)
+            upTable.ResetComparisonCount();
             int upCount = upTable.FindRecord(key);
-            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений" << endl;
+            int upComparisons = upTable.GetComparisonCount();
+            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений, " << upComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
 
+            // Поиск в упорядоченной таблице (бинарное дерево поиска)
+            bstTable.ResetComparisonCount();
             int bstCount = bstTable.FindRecord(key);
-            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений" << endl;
+            int bstComparisons = bstTable.GetComparisonCount();
+            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений, " << bstComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
 
+            // Поиск в хеш-таблице
+            hashTable.ResetComparisonCount();
             int hashCount = hashTable.FindRecord(key);
-            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений" << endl;
+            int hashComparisons = hashTable.GetComparisonCount();
+            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений, " << hashComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
             break;
         }
 

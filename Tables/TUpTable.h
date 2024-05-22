@@ -8,15 +8,73 @@ protected:
     void SortData();
     void MergeSort(TTabRecord** arr, int l, int r);
     void Merge(TTabRecord** arr, int l, int m, int r);
+    std::string GetKeyAtIndex(int index);
+    int comparisonCount;
 public:
-    TUpTable(int Size) : TNeUpTable(), TabSize(Size), DataCount(0) {}
+    TUpTable(int Size) : TNeUpTable(), TabSize(Size), DataCount(0), comparisonCount(0) {}
     virtual int FindRecord(const std::string& k);
     virtual void InsRecord(const std::string& k, TData* pVal);
     virtual void DelRecord(const std::string& k);
+    int GetComparisonCount() const { return comparisonCount; }
+    void ResetComparisonCount() { comparisonCount = 0; }
 private:
     int TabSize;
     int DataCount;
 };
+
+std::string TUpTable::GetKeyAtIndex(int index) {
+    TTabRecord* current = pFirst;
+    int i = 0;
+
+    while (current && i < index) {
+        current = current->GetNext();
+        i++;
+    }
+
+    if (current)
+        return current->GetKey();
+    else
+        return "";
+}
+
+int TUpTable::FindRecord(const std::string& k) {
+    comparisonCount = 0;
+    int count = 0;
+    int left = 0;
+    int right = DataCount - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        comparisonCount++;
+        const std::string& midKey = GetKeyAtIndex(mid);
+
+        if (midKey == k) {
+            count++;
+
+            int idx = mid - 1;
+            while (idx >= 0 && GetKeyAtIndex(idx) == k) {
+                count++;
+                idx--;
+            }
+
+            idx = mid + 1;
+            while (idx < DataCount && GetKeyAtIndex(idx) == k) {
+                count++;
+                idx++;
+            }
+
+            return count;
+        }
+        else if (midKey < k) {
+            left = mid + 1;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+
+    return count;
+}
 
 void TUpTable::SortData() {
     if (DataCount <= 1)
@@ -91,20 +149,6 @@ void TUpTable::Merge(TTabRecord** arr, int l, int m, int r) {
 
     delete[] L;
     delete[] R;
-}
-
-int TUpTable::FindRecord(const std::string& k) {
-    if (!pFirst)
-        return 0;
-
-    int count = 0;
-    TTabRecord* pRec = pFirst;
-    while (pRec) {
-        if (pRec->GetKey() == k)
-            count++;
-        pRec = pRec->GetNext();
-    }
-    return count;
 }
 
 void TUpTable::InsRecord(const std::string& k, TData* pVal) {

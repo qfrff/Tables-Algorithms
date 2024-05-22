@@ -18,18 +18,20 @@ public:
     }
 };
 
-// Класс упорядоченной таблицы (бинарное дерево поиска)
 class TBinarySearchTree {
 private:
     BSTNode* Root;
+    int comparisonCount;
 public:
-    TBinarySearchTree() : Root(nullptr) {}
+    TBinarySearchTree() : Root(nullptr), comparisonCount(0) {}
     ~TBinarySearchTree() { Clear(); }
 
     void Insert(const std::string& k, TData* pData);
     int FindRecord(const std::string& k);
     void Delete(const std::string& k);
     void Clear();
+    int GetComparisonCount() const { return comparisonCount; }
+    void ResetComparisonCount() { comparisonCount = 0; }
 
 private:
     void InsertHelper(BSTNode*& node, const std::string& k, TData* pData);
@@ -59,7 +61,6 @@ void TBinarySearchTree::InsertHelper(BSTNode*& node, const std::string& k, TData
         else {
             node->pData->count++;
         }
-        // Возврат из функции после обработки дубликата ключа
         return;
     }
 }

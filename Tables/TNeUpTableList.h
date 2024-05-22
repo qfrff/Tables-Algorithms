@@ -21,9 +21,11 @@ void TNeUpTableList::Insert(const std::string& k, TData* pData) {
 }
 
 int TNeUpTableList::FindRecord(const std::string& k) {
+    comparisonCount = 0;
     TTabRecord* pRec = pFirst;
     int count = 0;
     while (pRec) {
+        comparisonCount++;
         if (pRec->GetKey() == k)
             count++;
         pRec = pRec->GetNext();
