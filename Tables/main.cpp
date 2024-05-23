@@ -73,19 +73,22 @@ void WriteToFile(const string& key) {
 }
 
 // Функция для чтения ключей из файла и вывода на экран
-void ReadFromFile() {
+vector<string> ReadFromFile() {
+    vector<string> keys;
     ifstream file("C:\\Users\\Ваня\\Desktop\\key.txt");
     if (file.is_open()) {
         cout << "\nСодержимое файла key.txt:" << endl;
         string key;
         while (getline(file, key)) {
             cout << key << endl;
+            keys.push_back(key);
         }
         file.close();
     }
     else {
         cerr << "Не получилось открыть файл" << endl;
     }
+    return keys;
 }
 
 // Функция для удаления ключа из файла
@@ -117,6 +120,18 @@ void RemoveFromFile(const string& key) {
     }
 }
 
+// Функция для удаления всех записей из файла
+void ClearFile() {
+    ofstream file("C:\\Users\\Ваня\\Desktop\\key.txt", ios::trunc);
+    if (file.is_open()) {
+        file.close();
+        cout << "\nФайл очищен" << endl;
+    }
+    else {
+        cerr << "Не получилось открыть файл" << endl;
+    }
+}
+
 // Функция пользователя системы и тесты производительности таблиц
 
 int main() {
@@ -138,6 +153,7 @@ int main() {
         cout << "3. Удалить слово" << endl;
         cout << "4. Показать данные" << endl;
         cout << "5. Провести тест" << endl;
+        cout << "6. Очистить файл" << endl; // Новый пункт меню
         cout << "0. Выход" << endl;
         cout << "Выберите действие: ";
         cin >> choice;
@@ -163,31 +179,31 @@ int main() {
             neUpTable.ResetComparisonCount();
             int neUpCount = neUpTable.FindRecord(key);
             int neUpComparisons = neUpTable.GetComparisonCount();
-            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений, " << neUpComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
+            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений, " << neUpComparisons << " кол-во операций (сравнений ключей), выполненных при поиске" << endl;
 
             // Поиск в неупорядоченной таблице на основе списка
             listTable.ResetComparisonCount();
             int listCount = listTable.FindRecord(key);
             int listComparisons = listTable.GetComparisonCount();
-            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений, " << listComparisons << " кол-во сравнений ключей" << endl;
+            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений, " << listComparisons << " кол-во операций" << endl;
 
             // Поиск в упорядоченной таблице (сортировка слиянием, бинарный поиск)
             upTable.ResetComparisonCount();
             int upCount = upTable.FindRecord(key);
             int upComparisons = upTable.GetComparisonCount();
-            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений, " << upComparisons << " кол-во сравнений ключей" << endl;
+            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений, " << upComparisons << " кол-во операций" << endl;
 
             // Поиск в упорядоченной таблице (бинарное дерево поиска)
             bstTable.ResetComparisonCount();
             int bstCount = bstTable.FindRecord(key);
             int bstComparisons = bstTable.GetComparisonCount();
-            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений, " << bstComparisons << " кол-во сравнений ключей" << endl;
+            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений, " << bstComparisons << " кол-во операций" << endl;
 
             // Поиск в хеш-таблице
             hashTable.ResetComparisonCount();
             int hashCount = hashTable.FindRecord(key);
             int hashComparisons = hashTable.GetComparisonCount();
-            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений, " << hashComparisons << " кол-во сравнений ключей" << endl;
+            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений, " << hashComparisons << " кол-во операций" << endl;
             break;
         }
 
@@ -298,6 +314,11 @@ int main() {
 
             } while (true);
 
+            break;
+        }
+
+        case 6: {
+            ClearFile();
             break;
         }
 
