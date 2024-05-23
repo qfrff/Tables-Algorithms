@@ -179,7 +179,7 @@ int main() {
             neUpTable.ResetComparisonCount();
             int neUpCount = neUpTable.FindRecord(key);
             int neUpComparisons = neUpTable.GetComparisonCount();
-            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений, " << neUpComparisons << " кол-во операций (сравнений ключей), выполненных при поиске" << endl;
+            cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений, " << neUpComparisons << " кол-во операций" << endl;
 
             // Поиск в неупорядоченной таблице на основе списка
             listTable.ResetComparisonCount();
@@ -280,31 +280,36 @@ int main() {
                     int neUpCount = neUpTable.FindRecord(testWord);
                     auto endSearch1 = high_resolution_clock::now();
                     duration<double> neUpTime = endSearch1 - startSearch1;
-                    cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений за " << neUpTime.count() << " секунд" << endl;
+                    int neUpComparisons = neUpTable.GetComparisonCount();
+                    cout << "Неупорядоченная таблица на основе массива: Найдено " << neUpCount << " вхождений за " << neUpTime.count() << " секунд, " << neUpComparisons << " кол-во операций" << endl;
 
                     auto startSearch5 = high_resolution_clock::now();
                     int listCount = listTable.FindRecord(testWord);
                     auto endSearch5 = high_resolution_clock::now();
                     duration<double> listTime = endSearch5 - startSearch5;
-                    cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений за " << listTime.count() << " секунд" << endl;
+                    int listComparisons = listTable.GetComparisonCount();
+                    cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений за " << listTime.count() << " секунд, " << listComparisons << " кол-во операций" << endl;
 
                     auto startSearch2 = high_resolution_clock::now();
                     int upCount = upTable.FindRecord(testWord);
                     auto endSearch2 = high_resolution_clock::now();
                     duration<double> upTime = endSearch2 - startSearch2;
-                    cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений за " << upTime.count() << " секунд" << endl;
+                    int upComparisons = upTable.GetComparisonCount();
+                    cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений за " << upTime.count() << " секунд, " << upComparisons << " кол-во операций" << endl;
 
                     auto startSearch4 = high_resolution_clock::now();
                     int bstCount = bstTable.FindRecord(testWord);
                     auto endSearch4 = high_resolution_clock::now();
                     duration<double> bstTime = endSearch4 - startSearch4;
-                    cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений за " << bstTime.count() << " секунд" << endl;
+                    int bstComparisons = bstTable.GetComparisonCount();
+                    cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений за " << bstTime.count() << " секунд, " << bstComparisons << " кол-во операций" << endl;
 
                     auto startSearch3 = high_resolution_clock::now();
                     int hashCount = hashTable.FindRecord(testWord);
                     auto endSearch3 = high_resolution_clock::now();
                     duration<double> hashTime = endSearch3 - startSearch3;
-                    cout << "Хеш-таблица: Найдено " << hashCount << " вхождений за " << hashTime.count() << " секунд" << endl;
+                    int hashComparisons = hashTable.GetComparisonCount();
+                    cout << "Хеш-таблица: Найдено " << hashCount << " вхождений за " << hashTime.count() << " секунд, " << hashComparisons << " кол-во операций" << endl;
 
                 } while (true);
 
