@@ -169,25 +169,25 @@ int main() {
             listTable.ResetComparisonCount();
             int listCount = listTable.FindRecord(key);
             int listComparisons = listTable.GetComparisonCount();
-            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений, " << listComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
+            cout << "Неупорядоченная таблица на основе списка: Найдено " << listCount << " вхождений, " << listComparisons << " кол-во сравнений ключей" << endl;
 
             // Поиск в упорядоченной таблице (сортировка слиянием, бинарный поиск)
             upTable.ResetComparisonCount();
             int upCount = upTable.FindRecord(key);
             int upComparisons = upTable.GetComparisonCount();
-            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений, " << upComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
+            cout << "Упорядоченная таблица (сортировка слиянием, бинарный поиск): Найдено " << upCount << " вхождений, " << upComparisons << " кол-во сравнений ключей" << endl;
 
             // Поиск в упорядоченной таблице (бинарное дерево поиска)
             bstTable.ResetComparisonCount();
             int bstCount = bstTable.FindRecord(key);
             int bstComparisons = bstTable.GetComparisonCount();
-            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений, " << bstComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
+            cout << "Упорядоченная таблица (бинарное дерево поиска): Найдено " << bstCount << " вхождений, " << bstComparisons << " кол-во сравнений ключей" << endl;
 
             // Поиск в хеш-таблице
             hashTable.ResetComparisonCount();
             int hashCount = hashTable.FindRecord(key);
             int hashComparisons = hashTable.GetComparisonCount();
-            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений, " << hashComparisons << " кол-во сравнений ключей, выполненных при поиске" << endl;
+            cout << "Хеш-таблица: Найдено " << hashCount << " вхождений, " << hashComparisons << " кол-во сравнений ключей" << endl;
             break;
         }
 
@@ -248,7 +248,7 @@ int main() {
                     int subChoice;
                     cout << "\n1. Найти слово" << endl;
                     cout << "2. Вернуться в основное меню" << endl;
-                    cout << "Выберите действие: ";
+                    cout << "\nВыберите действие: ";
                     cin >> subChoice;
 
                     if (subChoice == 2) {

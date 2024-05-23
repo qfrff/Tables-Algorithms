@@ -66,6 +66,7 @@ void TBinarySearchTree::InsertHelper(BSTNode*& node, const std::string& k, TData
 }
 
 int TBinarySearchTree::FindRecord(const std::string& k) {
+    comparisonCount = 0;
     return FindRecordHelper(Root, k);
 }
 
@@ -73,6 +74,7 @@ int TBinarySearchTree::FindRecordHelper(BSTNode* node, const std::string& k) {
     if (!node)
         return 0;
 
+    comparisonCount++;
     if (node->Key == k)
         return node->pData ? node->pData->count : 0;
 
