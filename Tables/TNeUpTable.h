@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TTabRecord.h"
+#include <iostream>
 
 // Класс неупорядоченной таблицы (массив)
 class TNeUpTable {
@@ -14,6 +15,9 @@ public:
     virtual void DelRecord(const std::string& k);
     int GetComparisonCount() const { return comparisonCount; }
     void ResetComparisonCount() { comparisonCount = 0; }
+
+    // Метод для отображения хранения данных
+    void DisplayRecords() const;
 };
 
 int TNeUpTable::FindRecord(const std::string& k) {
@@ -23,14 +27,26 @@ int TNeUpTable::FindRecord(const std::string& k) {
     while (pRec) {
         comparisonCount++;
         if (pRec->GetKey() == k)
-            count++;
+            count += pRec->GetDataPtr()->count; // Учитываем счетчик вхождений текущего узла
         pRec = pRec->GetNext();
     }
     return count;
 }
 
 void TNeUpTable::InsRecord(const std::string& k, TData* pVal) {
-    TTabRecord* pRec = new TTabRecord(k, pVal);
+    TTabRecord* pRec = pFirst;
+    while (pRec) {
+        if (pRec->GetKey() == k) {
+            pRec->GetDataPtr()->count++;
+            return;
+        }
+        pRec = pRec->GetNext();
+    }
+
+    TData* pData = new TData();
+    pData->data = k;
+    pData->count = 1;
+    pRec = new TTabRecord(k, pData);
     pRec->SetNext(pFirst);
     pFirst = pRec;
 }
@@ -53,5 +69,13 @@ void TNeUpTable::DelRecord(const std::string& k) {
     if (pCurr) {
         pPrev->SetNext(pCurr->GetNext());
         delete pCurr;
+    }
+}
+
+void TNeUpTable::DisplayRecords() const {
+    TTabRecord* pRec = pFirst;
+    while (pRec) {
+        std::cout << "Key: " << pRec->GetKey() << ", Data: " << pRec->GetDataPtr()->data << ", Count: " << pRec->GetDataPtr()->count << std::endl;
+        pRec = pRec->GetNext();
     }
 }

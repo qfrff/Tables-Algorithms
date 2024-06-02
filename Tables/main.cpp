@@ -139,9 +139,9 @@ int main() {
 
     TNeUpTable neUpTable;
     TNeUpTableList listTable;
-    TUpTable upTable(25); // можно изменить
+    TUpTable upTable(50); // можно изменить
     TBinarySearchTree bstTable;
-    THashTable hashTable(25); // можно изменить
+    THashTable hashTable(50); // можно изменить
 
     string key;
     int choice;
@@ -153,7 +153,8 @@ int main() {
         cout << "3. Удалить слово" << endl;
         cout << "4. Показать данные" << endl;
         cout << "5. Провести тест" << endl;
-        cout << "6. Очистить файл" << endl; // Новый пункт меню
+        cout << "6. Очистить файл" << endl;
+        cout << "7. Показать данные таблиц" << endl;
         cout << "0. Выход" << endl;
         cout << "Выберите действие: ";
         cin >> choice;
@@ -324,6 +325,27 @@ int main() {
 
         case 6: {
             ClearFile();
+            break;
+        }
+
+        case 7: {
+            cout << "Отображение данных в таблицах: \n" << endl;
+
+            cout << "\nНеупорядоченная таблица на основе массива:" << endl;
+            neUpTable.DisplayRecords();
+
+            cout << "\nНеупорядоченная таблица на основе списка:" << endl;
+            listTable.DisplayRecords();
+
+            cout << "\nУпорядоченная таблица (сортировка слиянием, бинарный поиск):" << endl;
+            upTable.DisplayRecords();
+
+            cout << "\nУпорядоченная таблица (бинарное дерево поиска):" << endl;
+            bstTable.DisplayRecords();
+
+            cout << "\nХеш-таблица: \n" << endl;
+            hashTable.DisplayRecords();
+
             break;
         }
 

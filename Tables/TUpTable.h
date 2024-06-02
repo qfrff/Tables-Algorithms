@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TNeUpTable.h"
+#include <iostream>
 
 // Класс упорядоченной таблицы (массив, сортировка слиянием, бинарный поиск)
 class TUpTable : public TNeUpTable {
@@ -17,6 +18,9 @@ public:
     virtual void DelRecord(const std::string& k);
     int GetComparisonCount() const { return comparisonCount; }
     void ResetComparisonCount() { comparisonCount = 0; }
+
+    // Метод для отображения хранения данных
+    void DisplayRecords() const;
 private:
     int TabSize;
     int DataCount;
@@ -152,24 +156,33 @@ void TUpTable::Merge(TTabRecord** arr, int l, int m, int r) {
 }
 
 void TUpTable::InsRecord(const std::string& k, TData* pVal) {
-    if (DataCount < TabSize) {
-        TTabRecord* pRec = new TTabRecord(k, pVal);
-        if (!pFirst || k < pFirst->GetKey()) {
-            pRec->SetNext(pFirst);
-            pFirst = pRec;
-        }
-        else {
-            TTabRecord* pPrev = pFirst;
-            TTabRecord* pCurr = pFirst->GetNext();
-            while (pCurr && pCurr->GetKey() < k) {
-                pPrev = pCurr;
-                pCurr = pCurr->GetNext();
-            }
-            pPrev->SetNext(pRec);
-            pRec->SetNext(pCurr);
-        }
-        DataCount++;
+    TTabRecord* pRec = pFirst;
+    TTabRecord* pPrev = nullptr;
+    while (pRec && pRec->GetKey() < k) {
+        pPrev = pRec;
+        pRec = pRec->GetNext();
     }
+
+    if (pRec && pRec->GetKey() == k) {
+        pRec->GetDataPtr()->count++; // Увеличиваем счетчик вхождений
+        return;
+    }
+
+    // Если слово не найдено, создаем новую запись
+    TData* newData = new TData();
+    newData->data = k;
+    newData->count = 1;
+    pRec = new TTabRecord(k, newData);
+    if (!pPrev) {
+        pRec->SetNext(pFirst);
+        pFirst = pRec;
+    }
+    else {
+        pRec->SetNext(pPrev->GetNext());
+        pPrev->SetNext(pRec);
+    }
+    DataCount++;
+    SortData();
 }
 
 void TUpTable::DelRecord(const std::string& k) {
@@ -192,5 +205,13 @@ void TUpTable::DelRecord(const std::string& k) {
         pPrev->SetNext(pCurr->GetNext());
         delete pCurr;
         DataCount--;
+    }
+}
+
+void TUpTable::DisplayRecords() const {
+    TTabRecord* pRec = pFirst;
+    while (pRec) {
+        std::cout << "Key: " << pRec->GetKey() << ", Data: " << pRec->GetDataPtr()->data << ", Count: " << pRec->GetDataPtr()->count << std::endl;
+        pRec = pRec->GetNext();
     }
 }

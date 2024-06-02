@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TNeUpTable.h"
+#include <iostream>
 
 // Класс неупорядоченной таблицы (список)
 class TNeUpTableList : public TNeUpTable {
@@ -12,13 +13,31 @@ public:
     int FindRecord(const std::string& k);
     void Delete(const std::string& k);
     void Clear();
+
+    // Метод для отображения хранения данных
+    void DisplayRecords() const;
 };
 
 void TNeUpTableList::Insert(const std::string& k, TData* pData) {
-    TTabRecord* pRec = new TTabRecord(k, pData);
+    TTabRecord* pRec = pFirst;
+    while (pRec) {
+        if (pRec->GetKey() == k) {
+            pRec->GetDataPtr()->count++; // Увеличиваем счетчик вхождений
+            return;
+        }
+        pRec = pRec->GetNext();
+    }
+
+    // Если слово не найдено, создаем новую запись
+    TData* newData = new TData();
+    newData->data = k;
+    newData->count = 1;
+    pRec = new TTabRecord(k, newData);
     pRec->SetNext(pFirst);
+    pRec->SetDataPtr(newData);
     pFirst = pRec;
 }
+
 
 int TNeUpTableList::FindRecord(const std::string& k) {
     comparisonCount = 0;
@@ -27,7 +46,7 @@ int TNeUpTableList::FindRecord(const std::string& k) {
     while (pRec) {
         comparisonCount++;
         if (pRec->GetKey() == k)
-            count++;
+            count += pRec->GetDataPtr()->count;
         pRec = pRec->GetNext();
     }
     return count;
@@ -62,4 +81,12 @@ void TNeUpTableList::Clear() {
         delete pTemp;
     }
     pFirst = nullptr;
+}
+
+void TNeUpTableList::DisplayRecords() const {
+    TTabRecord* pRec = pFirst;
+    while (pRec) {
+        std::cout << "Key: " << pRec->GetKey() << ", Data: " << pRec->GetDataPtr()->data << ", Count: " << pRec->GetDataPtr()->count << std::endl;
+        pRec = pRec->GetNext();
+    }
 }

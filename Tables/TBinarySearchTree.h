@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TData.h"
+#include <iostream>
 
 // Узел бинарного дерева поиска
 class BSTNode {
@@ -33,11 +34,13 @@ public:
     int GetComparisonCount() const { return comparisonCount; }
     void ResetComparisonCount() { comparisonCount = 0; }
 
+    void DisplayRecords() const;
 private:
     void InsertHelper(BSTNode*& node, const std::string& k, TData* pData);
     int FindRecordHelper(BSTNode* node, const std::string& k);
     void DeleteHelper(BSTNode*& node, const std::string& k);
     void ClearHelper(BSTNode*& node);
+    void DisplayRecordsHelper(BSTNode* node) const;
 };
 
 void TBinarySearchTree::Insert(const std::string& k, TData* pData) {
@@ -46,7 +49,10 @@ void TBinarySearchTree::Insert(const std::string& k, TData* pData) {
 
 void TBinarySearchTree::InsertHelper(BSTNode*& node, const std::string& k, TData* pData) {
     if (!node) {
-        node = new BSTNode(k, pData);
+        TData* newData = new TData();
+        newData->data = k;
+        newData->count = 1;
+        node = new BSTNode(k, newData);
     }
     else if (k < node->Key) {
         InsertHelper(node->Left, k, pData);
@@ -64,6 +70,7 @@ void TBinarySearchTree::InsertHelper(BSTNode*& node, const std::string& k, TData
         return;
     }
 }
+
 
 int TBinarySearchTree::FindRecord(const std::string& k) {
     comparisonCount = 0;
@@ -135,4 +142,16 @@ void TBinarySearchTree::ClearHelper(BSTNode*& node) {
     ClearHelper(node->Left);
     ClearHelper(node->Right);
     delete node;
+}
+
+void TBinarySearchTree::DisplayRecordsHelper(BSTNode* node) const {
+    if (node) {
+        DisplayRecordsHelper(node->Left);
+        std::cout << "Key: " << node->Key << ", Data: " << node->pData->data << ", Count: " << node->pData->count << std::endl;
+        DisplayRecordsHelper(node->Right);
+    }
+}
+
+void TBinarySearchTree::DisplayRecords() const {
+    DisplayRecordsHelper(Root);
 }
