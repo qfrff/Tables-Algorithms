@@ -20,11 +20,15 @@ public:
 
 void TNeUpTableList::Insert(const std::string& k, TData* pData) {
     TTabRecord* pRec = pFirst;
+    TTabRecord* pPrev = nullptr;
+
+    // Ищем последний элемент списка
     while (pRec) {
         if (pRec->GetKey() == k) {
             pRec->GetDataPtr()->count++; // Увеличиваем счетчик вхождений
             return;
         }
+        pPrev = pRec;
         pRec = pRec->GetNext();
     }
 
@@ -33,23 +37,26 @@ void TNeUpTableList::Insert(const std::string& k, TData* pData) {
     newData->data = k;
     newData->count = 1;
     pRec = new TTabRecord(k, newData);
-    pRec->SetNext(pFirst);
-    pRec->SetDataPtr(newData);
-    pFirst = pRec;
-}
 
+    // Если список пуст, новая запись становится первым элементом
+    if (!pFirst) {
+        pFirst = pRec;
+    }
+    else { // В противном случае, добавляем новую запись в конец списка
+        pPrev->SetNext(pRec);
+    }
+}
 
 int TNeUpTableList::FindRecord(const std::string& k) {
     comparisonCount = 0;
     TTabRecord* pRec = pFirst;
-    int count = 0;
     while (pRec) {
         comparisonCount++;
         if (pRec->GetKey() == k)
-            count += pRec->GetDataPtr()->count;
+            return pRec->GetDataPtr()->count;
         pRec = pRec->GetNext();
     }
-    return count;
+    return 0; 
 }
 
 void TNeUpTableList::Delete(const std::string& k) {

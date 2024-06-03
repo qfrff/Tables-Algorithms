@@ -62,7 +62,7 @@ void DisplayRandomWords(const vector<string>& randomWords) {
 
 // Функция для записи ключа в файл
 void WriteToFile(const string& key) {
-    ofstream file("C:\\Users\\Ваня\\Desktop\\key.txt", ios::app);
+    ofstream file("C:\\Users\\s22380640\\Desktop\\key.txt", ios::app);
     if (file.is_open()) {
         file << key << endl;
         file.close();
@@ -75,7 +75,7 @@ void WriteToFile(const string& key) {
 // Функция для чтения ключей из файла и вывода на экран
 vector<string> ReadFromFile() {
     vector<string> keys;
-    ifstream file("C:\\Users\\Ваня\\Desktop\\key.txt");
+    ifstream file("C:\\Users\\s22380640\\Desktop\\key.txt");
     if (file.is_open()) {
         cout << "\nСодержимое файла key.txt:" << endl;
         string key;
@@ -93,8 +93,8 @@ vector<string> ReadFromFile() {
 
 // Функция для удаления ключа из файла
 void RemoveFromFile(const string& key) {
-    ifstream inputFile("C:\\Users\\Ваня\\Desktop\\key.txt");
-    ofstream tempFile("C:\\Users\\Ваня\\Desktop\\temp.txt");
+    ifstream inputFile("C:\\Users\\s22380640\\Desktop\\key.txt");
+    ofstream tempFile("C:\\Users\\s22380640\\Desktop\\temp.txt");
 
     string line;
     bool found = false;
@@ -111,9 +111,9 @@ void RemoveFromFile(const string& key) {
     tempFile.close();
 
     // Удаляем старый файл
-    remove("C:\\Users\\Ваня\\Desktop\\key.txt");
+    remove("C:\\Users\\s22380640\\Desktop\\key.txt");
     // Переименовываем временный файл в нужное имя
-    rename("C:\\Users\\Ваня\\Desktop\\temp.txt", "C:\\Users\\Ваня\\Desktop\\key.txt");
+    rename("C:\\Users\\s22380640\\Desktop\\temp.txt", "C:\\Users\\s22380640\\Desktop\\key.txt");
 
     if (!found) {
         cerr << "Слово не найдено в файле" << endl;
@@ -122,7 +122,7 @@ void RemoveFromFile(const string& key) {
 
 // Функция для удаления всех записей из файла
 void ClearFile() {
-    ofstream file("C:\\Users\\Ваня\\Desktop\\key.txt", ios::trunc);
+    ofstream file("C:\\Users\\s22380640\\Desktop\\key.txt", ios::trunc);
     if (file.is_open()) {
         file.close();
         cout << "\nФайл очищен" << endl;
@@ -139,9 +139,9 @@ int main() {
 
     TNeUpTable neUpTable;
     TNeUpTableList listTable;
-    TUpTable upTable(50); // можно изменить
+    TUpTable upTable(5); // можно изменить
     TBinarySearchTree bstTable;
-    THashTable hashTable(50); // можно изменить
+    THashTable hashTable(5); // можно изменить
 
     string key;
     int choice;
@@ -342,10 +342,11 @@ int main() {
 
             cout << "\nУпорядоченная таблица (бинарное дерево поиска):" << endl;
             bstTable.DisplayRecords();
+            cout << "\nКорень дерева: " << bstTable.GetRoot()->Key << endl;
 
             cout << "\nХеш-таблица: \n" << endl;
             hashTable.DisplayRecords();
-
+            hashTable.DisplayResolvedIndices();
             break;
         }
 

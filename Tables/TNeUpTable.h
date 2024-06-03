@@ -16,40 +16,51 @@ public:
     int GetComparisonCount() const { return comparisonCount; }
     void ResetComparisonCount() { comparisonCount = 0; }
 
-    // Метод для отображения хранения данных
     void DisplayRecords() const;
 };
 
 int TNeUpTable::FindRecord(const std::string& k) {
     comparisonCount = 0;
     TTabRecord* pRec = pFirst;
-    int count = 0;
     while (pRec) {
         comparisonCount++;
         if (pRec->GetKey() == k)
-            count += pRec->GetDataPtr()->count; // Учитываем счетчик вхождений текущего узла
+            return pRec->GetDataPtr()->count;
         pRec = pRec->GetNext();
     }
-    return count;
+    return 0; // Если ключ не найден, возвращаем 0
 }
+
 
 void TNeUpTable::InsRecord(const std::string& k, TData* pVal) {
     TTabRecord* pRec = pFirst;
+    TTabRecord* pPrev = nullptr;
+
+    // Ищем последний элемент списка
     while (pRec) {
         if (pRec->GetKey() == k) {
             pRec->GetDataPtr()->count++;
             return;
         }
+        pPrev = pRec;
         pRec = pRec->GetNext();
     }
 
+    // Создаем новую запись
     TData* pData = new TData();
     pData->data = k;
     pData->count = 1;
     pRec = new TTabRecord(k, pData);
-    pRec->SetNext(pFirst);
-    pFirst = pRec;
+
+    // Если список пуст, новая запись становится первым элементом
+    if (!pFirst) {
+        pFirst = pRec;
+    }
+    else { // В противном случае, добавляем новую запись в конец списка
+        pPrev->SetNext(pRec);
+    }
 }
+
 
 void TNeUpTable::DelRecord(const std::string& k) {
     if (!pFirst)

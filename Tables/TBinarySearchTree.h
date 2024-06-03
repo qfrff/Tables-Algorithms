@@ -19,6 +19,7 @@ public:
     }
 };
 
+
 class TBinarySearchTree {
 private:
     BSTNode* Root;
@@ -35,6 +36,7 @@ public:
     void ResetComparisonCount() { comparisonCount = 0; }
 
     void DisplayRecords() const;
+    BSTNode* GetRoot() const; // Перенесенный метод
 private:
     void InsertHelper(BSTNode*& node, const std::string& k, TData* pData);
     int FindRecordHelper(BSTNode* node, const std::string& k);
@@ -154,4 +156,8 @@ void TBinarySearchTree::DisplayRecordsHelper(BSTNode* node) const {
 
 void TBinarySearchTree::DisplayRecords() const {
     DisplayRecordsHelper(Root);
+}
+
+BSTNode* TBinarySearchTree::GetRoot() const {
+    return Root;
 }
